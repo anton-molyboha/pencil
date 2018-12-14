@@ -10,6 +10,11 @@ class MainAppWindow: public QMainWindow
 public:
     MainAppWindow();
     virtual ~MainAppWindow(){}
+private:
+    QPushButton m_button;
+    bool pressed;
+protected:
+    virtual void mouseMoveEvent(QMouseEvent *event);
 signals:
     //void test_signal();
 public slots:
@@ -17,6 +22,7 @@ public slots:
     {
         close();
     }
+    void on_button_press();
 };
 
 #endif // TRYQT_H
