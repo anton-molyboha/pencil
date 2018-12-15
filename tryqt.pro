@@ -1,4 +1,6 @@
-SOURCES = tryqt.cpp
+SOURCES = tryqt.cpp \
+    drawablesceneview.cpp
 HEADERS += \
-    tryqt.h
+    tryqt.h \
+    drawablesceneview.h
 QT += widgets

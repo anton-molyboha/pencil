@@ -3,6 +3,7 @@
 
 #include <QtGui>
 #include <QtWidgets/QtWidgets>
+#include "drawablesceneview.h"
 
 class MainAppWindow: public QMainWindow
 {
@@ -13,7 +14,7 @@ public:
 private:
     // The declaration order is significant, don't change it
     QGraphicsScene m_scene;
-    QGraphicsView m_view;
+    DrawableSceneView m_view;
 private:
     QPainterPath samplePath();
 protected:
