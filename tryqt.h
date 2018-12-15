@@ -11,8 +11,11 @@ public:
     MainAppWindow();
     virtual ~MainAppWindow(){}
 private:
-    QPushButton m_button;
-    bool pressed;
+    // The declaration order is significant, don't change it
+    QGraphicsScene m_scene;
+    QGraphicsView m_view;
+private:
+    QPainterPath samplePath();
 protected:
     virtual void mouseMoveEvent(QMouseEvent *event);
 signals:
@@ -22,7 +25,6 @@ public slots:
     {
         close();
     }
-    void on_button_press();
 };
 
 #endif // TRYQT_H
