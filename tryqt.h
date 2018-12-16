@@ -10,7 +10,7 @@ class MainAppWindow: public QMainWindow
     Q_OBJECT
 public:
     MainAppWindow();
-    virtual ~MainAppWindow(){}
+    virtual ~MainAppWindow();
 private:
     // The declaration order is significant, don't change it
     QGraphicsScene m_scene;

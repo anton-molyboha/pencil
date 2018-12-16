@@ -1,4 +1,5 @@
 #include "tryqt.h"
+#include <iostream>
 
 MainAppWindow::MainAppWindow()
     :
@@ -52,6 +53,11 @@ QPainterPath MainAppWindow::samplePath()
 
 void MainAppWindow::mouseMoveEvent(QMouseEvent *event)
 {
+}
+
+MainAppWindow::~MainAppWindow()
+{
+    //std::cerr << "Destroying MainAppWindow" << std::endl;
 }
 
 int main(int argc, char* argv[])
