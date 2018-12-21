@@ -88,31 +88,84 @@ void DrawableSceneView::mouseReleaseEvent(QMouseEvent *event)
 
 bool DrawableSceneView::touchBeginEvent(QTouchEvent *event)
 {
+    m_current_path_item = new QGraphicsPathItem();
+    m_current_curve.reset(new QPainterPath());
+    scene()->addItem(m_current_path_item);
+    trace.clear();
+    //
+    std::vector<QTouchEvent::TouchPoint> touch;
     QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
     foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
-        if(touchPoint.state() != Qt::TouchPointStationary) {
-            QPointF pos = mapToScene(touchPoint.pos().toPoint());
-            scene()->addEllipse(pos.x() - 5, pos.y() - 5, 10, 10);
-        }
+        touch.push_back(touchPoint);
     }
+    trace.push_back(touch);
+    updateCurve();
     return true;
 }
 
 bool DrawableSceneView::touchUpdateEvent(QTouchEvent *event)
 {
+    assert(m_current_path_item);
+    std::vector<QTouchEvent::TouchPoint> touch;
     QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
     foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
-        if(touchPoint.state() != Qt::TouchPointStationary) {
-            QPointF pos = mapToScene(touchPoint.pos().toPoint());
-            scene()->addEllipse(pos.x() - 5, pos.y() - 5, 10, 10);
-        }
+        touch.push_back(touchPoint);
     }
+    trace.push_back(touch);
+    updateCurve();
     return true;
 }
 
 bool DrawableSceneView::touchEndEvent(QTouchEvent *event)
 {
+    m_current_path_item = nullptr;
     return true;
+}
+
+void DrawableSceneView::updateCurve()
+{
+    bool draw = true;
+    for( std::vector<QTouchEvent::TouchPoint> &touch : trace )
+    {
+        if( touch.size() > 1 )
+        {
+            draw = false;
+        }
+    }
+    QPainterPath curve;
+    {
+        bool first = true;
+        for( std::vector<QTouchEvent::TouchPoint> &touch : trace )
+        {
+            QPointF pos(0, 0);
+            int cnt = 0;
+            for( QTouchEvent::TouchPoint &pt : touch )
+            {
+                pos += pt.pos();
+                ++cnt;
+            }
+            pos /= cnt;
+            QPointF point = mapToScene(pos.toPoint());
+            if( first )
+            {
+                curve.moveTo(point);
+                first = false;
+            }
+            else
+            {
+                curve.lineTo(point);
+            }
+        }
+    }
+    if( draw )
+    {
+        m_current_path_item->setPen(QPen(QBrush(Qt::black), 1));
+    }
+    else
+    {
+        m_current_path_item->setPen(QPen(QBrush(Qt::white), 40));
+    }
+    m_current_path_item->setPath(curve);
 }
 
 DrawableSceneView::~DrawableSceneView()

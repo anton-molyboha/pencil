@@ -12,9 +12,11 @@ public:
     virtual ~DrawableSceneView();
     void setScene(QGraphicsScene* scene);
 private:
+    std::vector<std::vector<QTouchEvent::TouchPoint> > trace;
     QGraphicsPathItem m_cursor_follower;
     std::unique_ptr<QPainterPath> m_current_curve;
     QGraphicsPathItem* m_current_path_item;    // Owned by the scene at all times
+    void updateCurve();
 protected:
     virtual bool event(QEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
