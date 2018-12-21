@@ -1,6 +1,10 @@
 #include "drawablesceneview.h"
 #include <iostream>
 
+TouchInfo::TouchInfo()
+    :timestamp(std::chrono::steady_clock::now())
+{}
+
 DrawableSceneView::DrawableSceneView()
     :m_current_path_item()
 {
@@ -94,10 +98,10 @@ bool DrawableSceneView::touchBeginEvent(QTouchEvent *event)
     scene()->addItem(m_current_path_item);
     trace.clear();
     //
-    std::vector<QTouchEvent::TouchPoint> touch;
+    TouchInfo touch;
     QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
     foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
-        touch.push_back(touchPoint);
+        touch.touchpoints.push_back(touchPoint);
     }
     trace.push_back(touch);
     updateCurve();
@@ -107,10 +111,10 @@ bool DrawableSceneView::touchBeginEvent(QTouchEvent *event)
 bool DrawableSceneView::touchUpdateEvent(QTouchEvent *event)
 {
     assert(m_current_path_item);
-    std::vector<QTouchEvent::TouchPoint> touch;
+    TouchInfo touch;
     QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
     foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
-        touch.push_back(touchPoint);
+        touch.touchpoints.push_back(touchPoint);
     }
     trace.push_back(touch);
     updateCurve();
@@ -126,9 +130,9 @@ bool DrawableSceneView::touchEndEvent(QTouchEvent *event)
 void DrawableSceneView::updateCurve()
 {
     bool draw = true;
-    for( std::vector<QTouchEvent::TouchPoint> &touch : trace )
+    for( TouchInfo &touch : trace )
     {
-        if( touch.size() > 1 )
+        if( touch.touchpoints.size() > 1 )
         {
             draw = false;
         }
@@ -136,11 +140,11 @@ void DrawableSceneView::updateCurve()
     QPainterPath curve;
     {
         bool first = true;
-        for( std::vector<QTouchEvent::TouchPoint> &touch : trace )
+        for( TouchInfo &touch : trace )
         {
             QPointF pos(0, 0);
             int cnt = 0;
-            for( QTouchEvent::TouchPoint &pt : touch )
+            for( QTouchEvent::TouchPoint &pt : touch.touchpoints )
             {
                 pos += pt.pos();
                 ++cnt;
