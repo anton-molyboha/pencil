@@ -1,4 +1,4 @@
-#include "tryqt.h"
+#include "pencil.h"
 #include <iostream>
 
 MainAppWindow::MainAppWindow()
