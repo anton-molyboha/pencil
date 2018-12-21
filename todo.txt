@@ -1,6 +1,11 @@
 List
 ======
 
-* Check if the screen is single-touch or multi-touch using kernel event
-  devices
-  * It is multitouch, with proper kernel modules
+ * Scrolling
+ * Zoom
+ * Un-hardcode the size of the eraser
+ * Saving and loading
+
+Version 2
+ * Smooth-out drawn curves
+ * Proper erasing

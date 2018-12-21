@@ -35,6 +35,7 @@ void DrawableSceneView::setScene(QGraphicsScene* scene)
 //        this->scene()->removeItem(&m_cursor_follower);
 //    }
     QGraphicsView::setScene(scene);
+    setSceneRect(0, 0, 800, 600);
 //    this->scene()->addItem(&m_cursor_follower);
 }
 
