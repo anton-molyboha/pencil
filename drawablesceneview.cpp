@@ -11,6 +11,7 @@ DrawableSceneView::DrawableSceneView()
         m_cursor_follower.setPath(cursor);
     }
     //scene()->addItem(&m_cursor_follower);
+    setAttribute(Qt::WA_AcceptTouchEvents);
 }
 
 DrawableSceneView::DrawableSceneView(QGraphicsScene* scene)
@@ -22,6 +23,7 @@ DrawableSceneView::DrawableSceneView(QGraphicsScene* scene)
         cursor.addEllipse(-5, -5, 10, 10);
         m_cursor_follower.setPath(cursor);
     }
+    setAttribute(Qt::WA_AcceptTouchEvents);
     setScene(scene);
 }
 
@@ -36,11 +38,26 @@ void DrawableSceneView::setScene(QGraphicsScene* scene)
 //    this->scene()->addItem(&m_cursor_follower);
 }
 
+bool DrawableSceneView::event(QEvent *event)
+{
+    switch(event->type())
+    {
+    case QEvent::TouchBegin:
+        return touchBeginEvent(static_cast<QTouchEvent *>(event));
+    case QEvent::TouchUpdate:
+        return touchUpdateEvent(static_cast<QTouchEvent *>(event));
+    case QEvent::TouchEnd:
+        return touchEndEvent(static_cast<QTouchEvent *>(event));
+    default:
+        return QGraphicsView::event(event);
+    }
+}
+
 void DrawableSceneView::mouseMoveEvent(QMouseEvent *event)
 {
 //    m_cursor_follower.setPos(mapToScene(event->x(), event->y()));
     if( m_current_path_item != nullptr ) {
-        std::cerr << "Drawing..." << std::endl;
+        //std::cerr << "Drawing..." << std::endl;
         if( m_current_curve ) {
             m_current_curve->lineTo(mapToScene(event->x(), event->y()));
         } else {
@@ -67,6 +84,35 @@ void DrawableSceneView::mouseReleaseEvent(QMouseEvent *event)
         m_current_path_item = nullptr;
         m_current_curve.release();
     }
+}
+
+bool DrawableSceneView::touchBeginEvent(QTouchEvent *event)
+{
+    QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
+    foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
+        if(touchPoint.state() != Qt::TouchPointStationary) {
+            QPointF pos = mapToScene(touchPoint.pos().toPoint());
+            scene()->addEllipse(pos.x() - 5, pos.y() - 5, 10, 10);
+        }
+    }
+    return true;
+}
+
+bool DrawableSceneView::touchUpdateEvent(QTouchEvent *event)
+{
+    QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
+    foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
+        if(touchPoint.state() != Qt::TouchPointStationary) {
+            QPointF pos = mapToScene(touchPoint.pos().toPoint());
+            scene()->addEllipse(pos.x() - 5, pos.y() - 5, 10, 10);
+        }
+    }
+    return true;
+}
+
+bool DrawableSceneView::touchEndEvent(QTouchEvent *event)
+{
+    return true;
 }
 
 DrawableSceneView::~DrawableSceneView()

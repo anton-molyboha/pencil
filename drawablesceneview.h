@@ -16,9 +16,13 @@ private:
     std::unique_ptr<QPainterPath> m_current_curve;
     QGraphicsPathItem* m_current_path_item;    // Owned by the scene at all times
 protected:
+    virtual bool event(QEvent *event);
     virtual void mouseMoveEvent(QMouseEvent *event);
     virtual void mousePressEvent(QMouseEvent *event);
     virtual void mouseReleaseEvent(QMouseEvent *event);
+    virtual bool touchBeginEvent(QTouchEvent *event);
+    virtual bool touchUpdateEvent(QTouchEvent *event);
+    virtual bool touchEndEvent(QTouchEvent *event);
 };
 
 #endif // DRAWABLESCENEVIEW_H
