@@ -53,6 +53,8 @@ bool DrawableSceneView::event(QEvent *event)
         return touchUpdateEvent(static_cast<QTouchEvent *>(event));
     case QEvent::TouchEnd:
         return touchEndEvent(static_cast<QTouchEvent *>(event));
+    case QEvent::TouchCancel:
+        return touchCancelEvent(static_cast<QTouchEvent *>(event));
     default:
         return QGraphicsView::event(event);
     }
@@ -124,6 +126,15 @@ bool DrawableSceneView::touchUpdateEvent(QTouchEvent *event)
 bool DrawableSceneView::touchEndEvent(QTouchEvent *event)
 {
     m_current_path_item = nullptr;
+    return true;
+}
+
+bool DrawableSceneView::touchCancelEvent(QTouchEvent *event)
+{
+    if( m_current_path_item != nullptr ) {
+        scene()->removeItem(m_current_path_item);
+        delete m_current_path_item;
+    }
     return true;
 }
 

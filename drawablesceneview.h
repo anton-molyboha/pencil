@@ -33,6 +33,7 @@ protected:
     virtual bool touchBeginEvent(QTouchEvent *event);
     virtual bool touchUpdateEvent(QTouchEvent *event);
     virtual bool touchEndEvent(QTouchEvent *event);
+    virtual bool touchCancelEvent(QTouchEvent *event);
 };
 
 #endif // DRAWABLESCENEVIEW_H
