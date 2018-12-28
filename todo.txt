@@ -1,9 +1,7 @@
 List
 ======
 
- * Scrolling
  * Zoom
- * Un-hardcode the size of the eraser
  * Saving and loading
 
 Version 2
