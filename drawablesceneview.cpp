@@ -39,7 +39,7 @@ void DrawableSceneView::setScene(QGraphicsScene* scene)
 //        this->scene()->removeItem(&m_cursor_follower);
 //    }
     QGraphicsView::setScene(scene);
-    setSceneRect(0, 0, 800, 600);
+    setSceneRect(-10, -10, 20, 20);
 //    this->scene()->addItem(&m_cursor_follower);
 }
 
@@ -99,6 +99,8 @@ bool DrawableSceneView::touchBeginEvent(QTouchEvent *event)
     m_current_curve.reset(new QPainterPath());
     scene()->addItem(m_current_path_item);
     trace.clear();
+    m_original_transform = transform();
+    m_original_transform_inverse = m_original_transform.inverted();
     //
     TouchInfo touch;
     QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
@@ -112,7 +114,6 @@ bool DrawableSceneView::touchBeginEvent(QTouchEvent *event)
 
 bool DrawableSceneView::touchUpdateEvent(QTouchEvent *event)
 {
-    assert(m_current_path_item);
     TouchInfo touch;
     QList<QTouchEvent::TouchPoint> touchPoints = event->touchPoints();
     foreach (const QTouchEvent::TouchPoint &touchPoint, touchPoints) {
@@ -135,17 +136,44 @@ bool DrawableSceneView::touchCancelEvent(QTouchEvent *event)
         scene()->removeItem(m_current_path_item);
         delete m_current_path_item;
     }
+    setTransform(m_original_transform);
+    QPointF old_center = m_original_transform_inverse.map(QPointF());
+    setSceneRect(old_center.x() - 10, old_center.y() - 10, 20, 20);
     return true;
 }
 
 void DrawableSceneView::updateCurve()
 {
-    bool draw = true;
+    enum class GestureType { draw, erase, scroll };
+    GestureType gtype = GestureType::draw;
     for( TouchInfo &touch : trace )
     {
         if( touch.touchpoints.size() > 1 )
         {
-            draw = false;
+            double diameter_sq = 0;
+            for( QTouchEvent::TouchPoint &pt1 : touch.touchpoints )
+            {
+                for( QTouchEvent::TouchPoint &pt2 : touch.touchpoints )
+                {
+                    QPointF delta = pt1.pos() - pt2.pos();
+                    double dist = QPointF::dotProduct(delta, delta);
+                    if( dist > diameter_sq )
+                    {
+                        diameter_sq = dist;
+                    }
+                }
+            }
+            if( diameter_sq >= TWO_FINGERS_THRESHOLD * TWO_FINGERS_THRESHOLD )
+            {
+                gtype = GestureType::scroll;
+            }
+            else
+            {
+                if( gtype == GestureType::draw )
+                {
+                    gtype = GestureType::erase;
+                }
+            }
         }
     }
     QPainterPath curve;
@@ -173,18 +201,63 @@ void DrawableSceneView::updateCurve()
             }
         }
     }
-    if( draw )
+    if( gtype == GestureType::draw )
     {
+        assert(m_current_path_item);
         m_current_path_item->setPen(QPen(QBrush(Qt::black), 1));
+        m_current_path_item->setPath(curve);
     }
-    else
+    else if( gtype == GestureType::erase )
     {
-        m_current_path_item->setPen(QPen(QBrush(Qt::white), 40));
+        assert(m_current_path_item);
+        m_current_path_item->setPen(QPen(QBrush(Qt::white), ERASER_SIZE));
+        m_current_path_item->setPath(curve);
     }
-    m_current_path_item->setPath(curve);
+    else if( gtype == GestureType::scroll )
+    {
+        // If we started drawing, remove that
+        if( m_current_path_item != nullptr )
+        {
+            scene()->removeItem(m_current_path_item);
+            delete m_current_path_item;
+            m_current_path_item = nullptr;
+        }
+        // The point, in scene coordinates, at which we started dragging
+        QPointF initial_touch;
+        {
+            auto first = std::find_if(trace.begin(), trace.end(), [](TouchInfo info){return info.touchpoints.size() >= 2;});
+            for( QTouchEvent::TouchPoint pt : first->touchpoints )
+            {
+                initial_touch += pt.pos();
+            }
+            initial_touch /= first->touchpoints.size();
+            initial_touch = m_original_transform_inverse.map(initial_touch);
+        }
+        // The point where we are dragging last
+        QPointF current_touch;
+        {
+            auto last = std::find_if(trace.rbegin(), trace.rend(), [](TouchInfo info){return info.touchpoints.size() >= 2;});
+            for( QTouchEvent::TouchPoint pt : last->touchpoints )
+            {
+                current_touch += pt.pos();
+            }
+            current_touch /= last->touchpoints.size();
+        }
+        // The transform necessary to translate the initial_touch into current_touch
+        {
+            QTransform transform;
+            transform.translate(current_touch.x() - initial_touch.x(), current_touch.y() - initial_touch.y());
+            setTransform(transform, false);
+            QPointF new_center = transform.inverted().map(QPointF());
+            setSceneRect(new_center.x() - 10, new_center.y() - 10, 20, 20);
+        }
+    }
 }
 
 DrawableSceneView::~DrawableSceneView()
 {
     //std::cerr << "Destroying DrawableSceneView" << std::endl;
 }
+
+const double DrawableSceneView::ERASER_SIZE = 40;
+const double DrawableSceneView::TWO_FINGERS_THRESHOLD = 150;

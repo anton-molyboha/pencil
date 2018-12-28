@@ -24,6 +24,8 @@ private:
     QGraphicsPathItem m_cursor_follower;
     std::unique_ptr<QPainterPath> m_current_curve;
     QGraphicsPathItem* m_current_path_item;    // Owned by the scene at all times
+    QTransform m_original_transform;
+    QTransform m_original_transform_inverse;
     void updateCurve();
 protected:
     virtual bool event(QEvent *event);
@@ -34,6 +36,9 @@ protected:
     virtual bool touchUpdateEvent(QTouchEvent *event);
     virtual bool touchEndEvent(QTouchEvent *event);
     virtual bool touchCancelEvent(QTouchEvent *event);
+public:
+    static const double ERASER_SIZE;
+    static const double TWO_FINGERS_THRESHOLD;
 };
 
 #endif // DRAWABLESCENEVIEW_H
