@@ -4,7 +4,8 @@ SOURCES = \
 HEADERS += \
     drawablesceneview.h \
     pencil.h
-QT += widgets
+QT += widgets \
+    svg
 
 DISTFILES += \
     todo.txt

@@ -1,5 +1,6 @@
 #include "pencil.h"
 #include <iostream>
+#include <QSvgGenerator>
 
 MainAppWindow::MainAppWindow()
     :
@@ -8,9 +9,12 @@ MainAppWindow::MainAppWindow()
 {
     QMenuBar* mainmenu = menuBar();
     QMenu* filemenu = mainmenu->addMenu(tr("&File"));
+    QAction* saveaction = filemenu->addAction("&Save");
     QAction* exitaction = filemenu->addAction("E&xit");
     QObject::connect(exitaction, &QAction::triggered,
                      this, &MainAppWindow::on_close);
+    QObject::connect(saveaction, &QAction::triggered,
+                     this, &MainAppWindow::on_save);
 
     setCentralWidget(&m_view);
 
@@ -53,6 +57,43 @@ QPainterPath MainAppWindow::samplePath()
 
 void MainAppWindow::mouseMoveEvent(QMouseEvent *event)
 {
+}
+
+std::ostream& operator << (std::ostream& strm, const QRectF& rect)
+{
+    strm << "(" << rect.left() << ", " << rect.top() << ") - (" << rect.right() << ", " << rect.bottom() << ")";
+    return strm;
+}
+
+std::ostream& operator << (std::ostream& strm, const QTransform& transform)
+{
+    return strm << "((" << transform.m11() << ", " << transform.m12() << ", " << transform.m13() << "), ("
+                        << transform.m21() << ", " << transform.m22() << ", " << transform.m23() << "), ("
+                        << transform.m31() << ", " << transform.m32() << ", " << transform.m33() << "))";
+}
+
+void MainAppWindow::on_save()
+{
+    QString fileName = QFileDialog::getSaveFileName(this,
+        tr("Save Image"), ".", tr("Scalable Vector Graphics (*.svg)"));
+    if( fileName != "" ) {
+        QSvgGenerator svg;
+        svg.setFileName(fileName);
+        QRectF bndRect = m_view.scene()->sceneRect();
+//        QRectF drawRect = bndRect;
+//        drawRect.moveTo(0, 0);
+        QRectF drawRect(0, 0, 1024, 768);
+//        svg.setSize(drawRect.size().toSize());
+        svg.setViewBox(drawRect);
+        std::cerr << bndRect << std::endl;
+        std::cerr << drawRect << std::endl;
+        std::cerr << m_view.transform() << std::endl;
+        QPainter painter;
+        painter.begin(&svg);
+        //m_view.render(&painter, QRectF(), bndRect.toRect());
+        m_view.render(&painter, drawRect.toRect(), bndRect.toRect());
+        painter.end();
+    }
 }
 
 MainAppWindow::~MainAppWindow()

@@ -26,6 +26,7 @@ public slots:
     {
         close();
     }
+    void on_save();
 };
 
 #endif // TRYQT_H
