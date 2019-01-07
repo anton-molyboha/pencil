@@ -260,4 +260,4 @@ DrawableSceneView::~DrawableSceneView()
 }
 
 const double DrawableSceneView::ERASER_SIZE = 40;
-const double DrawableSceneView::TWO_FINGERS_THRESHOLD = 150;
+const double DrawableSceneView::TWO_FINGERS_THRESHOLD = 110;
