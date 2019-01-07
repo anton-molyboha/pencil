@@ -79,10 +79,9 @@ void MainAppWindow::on_save()
     if( fileName != "" ) {
         QSvgGenerator svg;
         svg.setFileName(fileName);
-        QRectF bndRect = m_view.scene()->sceneRect();
-//        QRectF drawRect = bndRect;
-//        drawRect.moveTo(0, 0);
-        QRectF drawRect(0, 0, 1024, 768);
+        QRectF bndRect = m_view.scene()->itemsBoundingRect();
+        QRectF drawRect = bndRect;
+        drawRect.moveTo(0, 0);
 //        svg.setSize(drawRect.size().toSize());
         svg.setViewBox(drawRect);
         std::cerr << bndRect << std::endl;
@@ -90,8 +89,8 @@ void MainAppWindow::on_save()
         std::cerr << m_view.transform() << std::endl;
         QPainter painter;
         painter.begin(&svg);
-        //m_view.render(&painter, QRectF(), bndRect.toRect());
-        m_view.render(&painter, drawRect.toRect(), bndRect.toRect());
+        //m_view.scene()->render(&painter, QRectF(), bndRect.toRect());
+        m_view.scene()->render(&painter, drawRect.toRect(), bndRect.toRect());
         painter.end();
     }
 }
